@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jsonServer = require('json-server');
-// const fetch = require('node-fetch'); // Import the fetch library
-
+ 
+ 
 const app = express();
 
 app.use(cors());
@@ -31,7 +31,16 @@ const GITHUB_ACCESS_TOKEN = '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';
 // Route to fetch GitHub data using the token
 app.get('/github-data', async (req, res) => {
   // const githubUrl = 'https://api.github.com/repos/:owner/:repo'; // Replace with the actual GitHub API URL
-  const githubUrl = 'https://api.github.com/repos/:houzhihuil/github-api-employees'
+ 
+
+// Create an async function to import the fetch library
+const asyncImportFetch = async () => {
+    const fetch = await import('node-fetch');
+    return fetch;
+  }; 
+  
+ 
+  const githubUrl = process.env.GITHUB_API_URL || 'https://api.github.com/repos/:houzhihuil/github-api-employees' 
   try {
     const response = await fetch(githubUrl, {
       headers: {
@@ -47,7 +56,30 @@ app.get('/github-data', async (req, res) => {
   }
 });
 
+// Use the fetch library in an async function
+app.get('/github-data', async (req, res) => {
+    const fetch = await asyncImportFetch();
+    try {
+      const response = await fetch(githubUrl, {
+        headers: {
+          Authorization: `Bearer ${GITHUB_ACCESS_TOKEN}`,
+        },
+      });
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching GitHub data:', error);
+      res.status(500).json({ error: 'An error occurred while fetching GitHub data.' });
+    }
+  }); 
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+ 
+
+
+ 
